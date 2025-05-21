@@ -26,12 +26,20 @@ const config = {
     },
   },
 
-  // For production mode
-  webpack: (config) => {
+  // For production mode and path aliases
+  webpack: (config, { isServer }) => {
+    // Handle markdown files
     config.module.rules.push({
       test: /\.md$/,
       use: "raw-loader",
     });
+
+    // Path aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': __dirname + '/src',
+    };
+
     return config;
   },
 };

@@ -4,6 +4,7 @@
 import asyncio
 import logging
 from src.graph import build_graph
+from src.history import add_research_topic
 
 # Configure logging
 logging.basicConfig(
@@ -11,17 +12,14 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
-
 def enable_debug_logging():
     """Enable debug level logging for more detailed execution information."""
     logging.getLogger("src").setLevel(logging.DEBUG)
-
 
 logger = logging.getLogger(__name__)
 
 # Create the graph
 graph = build_graph()
-
 
 async def run_agent_workflow_async(
     user_input: str,
@@ -97,6 +95,16 @@ async def run_agent_workflow_async(
 
     logger.info("Async workflow completed successfully")
 
+    # Save the research topic to history
+    user_input = initial_state.get("messages", [{"role": "user", "content": ""}])[0].get("content", "")
+    if user_input:
+        # Extract summary from the final state or use a default
+        summary = "Research completed on topic: " + user_input
+        content = {
+            "user_input": user_input,
+            # Add any other relevant information from the final state here
+        }
+        add_research_topic(user_input, summary, content)
 
 if __name__ == "__main__":
     print(graph.get_graph(xray=True).draw_mermaid())

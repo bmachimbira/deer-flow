@@ -15,6 +15,7 @@ from langchain_core.messages import AIMessageChunk, ToolMessage
 from langgraph.types import Command
 
 from src.graph.builder import build_graph_with_memory
+from src.history import get_all_research_topics, get_research_topic
 from src.podcast.graph.builder import build_graph as build_podcast_graph
 from src.ppt.graph.builder import build_graph as build_ppt_graph
 from src.prose.graph.builder import build_graph as build_prose_graph
@@ -276,6 +277,28 @@ async def generate_prose(request: GenerateProseRequest):
         )
     except Exception as e:
         logger.exception(f"Error occurred during prose generation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/research/history")
+async def get_research_history():
+    """Get all research topics."""
+    try:
+        history = get_all_research_topics()
+        return {"history": history}
+    except Exception as e:
+        logger.exception(f"Error retrieving research history: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/research/history/{research_id}")
+async def get_research_topic_detail(research_id: str):
+    """Get a specific research topic by ID."""
+    try:
+        topic = get_research_topic(research_id)
+        if not topic:
+            raise HTTPException(status_code=404, detail="Research topic not found")
+        return topic
+    except Exception as e:
+        logger.exception(f"Error retrieving research topic {research_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
